@@ -1,0 +1,177 @@
+#!usr/bin/ python
+import subprocess  
+import termios, sys, os, time #gpio
+
+
+
+TERMIOS = termios
+
+def initialize():
+	
+	os.system("amixer sset Master on")
+	os.system("amixer sset PCM on")
+	os.system("amixer sset Headphone on")
+	time.sleep(0.5)
+	print "\nAUDIO INICIALIZADO"
+
+
+
+def getkey():
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        new = termios.tcgetattr(fd)
+        new[3] = new[3] & ~TERMIOS.ICANON & ~TERMIOS.ECHO
+        new[6][TERMIOS.VMIN] = 1
+        new[6][TERMIOS.VTIME] = 0
+        termios.tcsetattr(fd, TERMIOS.TCSANOW, new)
+        key_pressed = None
+        try:
+                key_pressed = os.read(fd, 1)
+        finally:
+                termios.tcsetattr(fd, TERMIOS.TCSAFLUSH, old)
+        return key_pressed
+
+"""
+Aqui esta la cancion del tiempo de Zelda. El parametro que le pasas al time.sleep() son los segundos que para
+entre una nota y otra. Para que pare medio segundo, le pasas como parametro 0.5, etc.
+Del resto no toques nada.
+
+"""
+def song_of_time():
+    print '********************************************************'
+    print '********************************************************'
+    print '******************Zelda - Song of Time******************'
+    print '********************************************************'	
+    print '********************************************************'
+    keyspress(LA)
+    time.sleep(0.2)
+    keyspress(RE)
+    time.sleep(0.3)
+    keyspress(FA)
+    time.sleep(0.2)
+    keyspress(LA)
+    time.sleep(0.3)
+    keyspress(RE)
+    time.sleep(0.3)
+    keyspress(FA)
+    time.sleep(0.2)
+    keyspress(LA)
+    time.sleep(0.1)
+    keyspress(DO_ALTO)
+    time.sleep(0.2)
+    keyspress(SI)
+    time.sleep(0.3)
+    keyspress(SOL)
+    time.sleep(0.3)
+    keyspress(FA)
+    time.sleep(0.3)
+    keyspress(SOL)
+    time.sleep(0.3)
+    keyspress(LA)
+    time.sleep(0.3)
+    keyspress(RE)
+    time.sleep(0.2)
+    keyspress(DO)
+    time.sleep(0.3)
+    keyspress(MI)
+    time.sleep(0.3)
+    keyspress(RE)
+    despedida()
+
+def despedida():
+	print '  ____  ___   ___  ____    ______   _______'
+	print ' / ___|/ _ \ / _ \|  _ \  | __ ) \ / / ____|'
+	print '| |  _| | | | | | | | | | |  _ \\ V /|  _|'
+	print '| |_| | |_| | |_| | |_| | | |_) || | | |___'
+ 	print ' \____|\___/ \___/|____/  |____/ |_| |_____|'
+
+	print '\n\n _____ ____  ___ _____ _   _ ____  ____'
+	print '|  ___|  _ \|_ _| ____| \ | |  _ \/ ___|'
+	print '| |_  | |_) || ||  _| |  \| | | | \___ \ '
+        print '|  _| |  _ < | || |___| |\  | |_| |___) |'
+        print '|_|   |_| \_\___|_____|_| \_|____/|____/'
+	
+	for i in range(2):
+		for i in range(8):
+			time.sleep(0.05)
+			gpio.write_port(0)
+			time.sleep(0.05)
+			gpio.write_bit(i, 1)
+	
+	
+		for i in range(8, -1, -1):
+			time.sleep(0.05)	
+			gpio.write_port(0)
+			time.sleep(0.05)
+			gpio.write_bit(i, 1)
+	gpio.write_port(0)			
+
+def keyspress(note):
+
+ 	if note == DO:
+                subprocess.Popen(['aplay', './notas_musicales/Do.wav'])
+                #gpio.write_bit(0, 1)
+        elif note == RE:
+                subprocess.Popen(['aplay', './notas_musicales/Re.wav'])
+                #gpio.write_bit(1, 1)
+        elif note == MI:
+                subprocess.Popen(['aplay', './notas_musicales/Mi.wav'])
+                #gpio.write_bit(2, 1)
+        elif note == FA:
+                subprocess.Popen(['aplay', './notas_musicales/Fa.wav'])
+                #gpio.write_bit(3, 1)
+        elif note == SOL:
+                subprocess.Popen(['aplay', './notas_musicales/Sol.wav'])     
+                #gpio.write_bit(4, 1)
+        elif note == LA:
+                subprocess.Popen(['aplay', './notas_musicales/La.wav'])
+                #gpio.write_bit(5, 1)
+        elif note == SI:
+                subprocess.Popen(['aplay', './notas_musicales/Si.wav'])
+                #gpio.write_bit(6, 1)
+        elif note == DO_ALTO:
+                subprocess.Popen(['aplay', './notas_musicales/Do_alto.wav'])
+                #gpio.write_bit(7, 1)
+	time.sleep(1)
+	#gpio.write_port(0)
+
+
+
+DO = 'a'
+RE = 's'
+MI = 'd'
+FA = 'f'
+SOL = 'g'
+LA = 'h'
+SI = 'j'
+DO_ALTO = 'k'
+
+
+
+def Uno():
+	initialize()
+	print '********************************************************'
+	print '********************************************************'
+	print '***************Estas en modo piano libre****************'
+	print '********************************************************'
+	print '********************************************************'
+
+	key_pressed = ""
+	i = 1
+	while(key_pressed != 'p'):
+		key_pressed = getkey()
+        	keyspress(key_pressed)
+        	print ord(key_pressed)
+	despedida()
+def Dos():
+	initialize()
+        song_of_time()
+
+#gpio.write_port(0)
+Switch = { 1: Uno, 2: Dos, }
+key_play = input('Introduce un valor\n1: Para modo "piano libre"\n2: Para cancion "Zelda - Song of time"\n"n": Para salir')
+
+
+Switch[key_play]()
+
+
